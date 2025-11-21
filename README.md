@@ -4,6 +4,12 @@ A full-stack application designed to help tenants **track and manage their month
 
 ---
 
+
+![ Dashboard ](preview/Dashboard.png)
+![ Chart Page ](preview/chart-page.png)
+![ DataTable Page ](preview/data-table-page.png)
+
+
 ## ✨ Key Features
 
 | Feature                   | Description                                                                      |
