@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { getExpenses } from "@/api/service";
+import { toast } from "react-toastify";
 
 export function useExpenseApi({
   init = [],
@@ -42,7 +43,7 @@ export function useExpenseApi({
           throw new Error(resp?.message || "Something went wrong...");
         }
       } catch (err) {
-        console.error(err);
+        toast.error(err.message);
         setError("Failed to load expenses.");
       } finally {
         setLoading(false);

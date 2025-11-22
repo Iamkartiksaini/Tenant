@@ -5,7 +5,7 @@ const { Api_Erorr_Response, Api_Response } = require("../controllers/response-ha
 
 const AiRoutes = express.Router();
 
-const ai = new GoogleGenAI({});
+const ai = new GoogleGenAI({apiKey:process.env.GEMINI_API_KEY});
 
 AiRoutes.get("/", async (req, res) => {
   const { startDate, endDate } = req.query;

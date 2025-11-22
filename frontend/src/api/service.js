@@ -43,15 +43,18 @@ instance.interceptors.response.use(
     }
   },
   function (error) {
-    if (error.status === 401) {
-      alert("Authorization Failed");
+    const { status, response } = error;
+    if (status === 401) {
       const cookies = new Cookies();
       cookies.remove(cookieDataKey, { path: "/" });
     }
+
+    const errorMessage =
+      response?.data?.message || error?.message || "Something went wrong";
     return {
       data: null,
       success: false,
-      message: error?.message || "Something went wrong",
+      message: errorMessage,
     };
   }
 );

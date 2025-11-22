@@ -1,5 +1,5 @@
 import { ExpenseCard } from '@/pages/Expense-List';
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from 'recharts';
@@ -75,6 +75,7 @@ const LineChartComponennt = () => {
 
   const rawExpenses = data;
 
+  const dateRef = useRef(null)
   const chartData = useMemo(() => {
     const dailyCategoryTotals = rawExpenses.reduce((acc, expense) => {
       const dateKey = formatDateKey(expense.date);
@@ -104,10 +105,9 @@ const LineChartComponennt = () => {
   }, [loading]);
 
 
-
   const { finalData, allCategories } = chartData;
 
-  if (loading) {
+  if (loading && data?.length == 0) {
     return (
       <LoadingComponent label="Loading expenses..." className="rounded-xl shadow-lg border border-gray-100 " />);
   }
@@ -120,13 +120,17 @@ const LineChartComponennt = () => {
     );
   }
 
+  function fetchDataWithDate(props) {
+    dateRef.current = props
+    refetch(props)
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 p-4 sm:p-8 flex justify-center items-start">
       <div className="w-full max-w-7xl bg-white shadow-2xl rounded-xl p-4 sm:p-8 ">
         <div className="flex items-center justify-between border-b-2 border-gray-200 pb-3 mb-3">
           <BackButton />
-          <ExpensesDate refetch={refetch} />
+          <ExpensesDate loading={loading} prevDates={dateRef.current} refetch={fetchDataWithDate} />
         </div>
         <div className="">
           <h1 className="text-3xl font-extrabold text-gray-800 mb-2">

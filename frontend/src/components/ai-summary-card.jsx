@@ -36,7 +36,6 @@ export default function AISummaryCard() {
         try {
             setIsLoading(true);
             const { success, data, message } = await getSummary({ startDate, endDate });
-
             if (success) {
                 setSummary(data?.aiInsight);
             } else {

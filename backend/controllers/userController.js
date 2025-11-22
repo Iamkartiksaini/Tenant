@@ -78,7 +78,7 @@ const loginUser = async (req, res) => {
       })
     );
   } else {
-    res.status(401).json(Api_Erorr_Response({ message: "Incorrect Password" }));
+    res.status(404).json(Api_Erorr_Response({ message: "Incorrect Password" }));
   }
 };
 

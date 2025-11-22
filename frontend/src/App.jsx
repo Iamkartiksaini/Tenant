@@ -8,6 +8,7 @@ import Loading from './components/loading';
 import TableView from './pages/TablePage';
 
 import ErrorBoundary, { FallbackRender } from './RootErrorLayer';
+import { ToastContainer } from 'react-toastify';
 
 const Auth = lazy(() => import('./pages/Auth'));
 const LoginForm = lazy(() => import('./components/login-form'));
@@ -19,6 +20,7 @@ const LineChart = lazy(() => import('./pages/ChartPage'));
 export default function App() {
     return (
         <UserProvider>
+            <ToastContainer />
             <BrowserRouter>
                 <Routes>
                     <Route path='/' element={<Layout />} >

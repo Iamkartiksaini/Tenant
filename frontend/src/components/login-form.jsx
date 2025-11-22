@@ -21,12 +21,13 @@ import { LoginSchema } from "@/lib/validations"
 import { login } from "@/api/service"
 import { useUserContext } from "@/store/UserContext"
 import { useState } from "react"
+import { toast } from "react-toastify"
 
 export default function LoginForm() {
 
-  const { user, isAuthLoading, signInHandler } = useUserContext()
+  const { isAuthLoading, signInHandler } = useUserContext()
   const [isLoading, setIsLoading] = useState(false)
-  const { register, handleSubmit, setValue, control, formState: { errors } } = useForm({
+  const { setError, handleSubmit, control, formState: { errors } } = useForm({
     defaultValues: {
       email: "",
       password: ""
@@ -39,22 +40,31 @@ export default function LoginForm() {
     if (isAuthLoading) return
     setIsLoading(true)
     try {
-      const res = await login(data)
-      const token = res.data.token
-      signInHandler(token)
+      const { success, data: responseData, message } = await login(data)
+      if (success) {
+        const token = responseData?.token
+        signInHandler(token)
+        toast.success("Welcome, " + responseData?.user?.name)
+      } else {
+        // if (message.toLowerCase()?.includes("pass")) {
+        //   setError("password", { type: "onChange", message: message })
+        // }
+        throw new Error(message)
+      }
     } catch (error) {
-      console.error(error.message)
+      toast.error(error.message)
     }
     finally {
       setIsLoading(false)
     }
   }
 
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Login to your account</CardTitle>
-        <CardDescription>
+        <CardDescription >
           Enter your email below to login to your account
         </CardDescription>
       </CardHeader>
@@ -62,10 +72,10 @@ export default function LoginForm() {
         <form onSubmit={handleSubmit(submit)}>
           <FieldGroup>
             <ReactHookField control={control} registerKey={"email"} label="Email" errors={errors}
-            placeholder="Enter your email address"
+              placeholder="Enter your email address"
             />
-            <ReactHookField control={control} registerKey={"password"} label="Password" errors={errors} 
-                        placeholder="Enter your password here"/>
+            <ReactHookField control={control} registerKey={"password"} label="Password" errors={errors}
+              placeholder="Enter your password here" />
             <Field>
               <Button disable={(isAuthLoading || isLoading).toString()} type="submit">{isLoading ? "Logging..." : "Login"}</Button>
               <FieldDescription className="text-center">

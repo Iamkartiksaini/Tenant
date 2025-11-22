@@ -80,54 +80,84 @@ The RESTful API manages data persistence, security, and AI service integration.
 
 ---
 
+
 ## ⚙️ Installation & Setup
 
 To get a local copy up and running, follow these steps.
 
-### Prerequisites
+### 📦 Repository
 
-- Node.js
-- npm or yarn
-- A MongoDB database instance (Local or Atlas)
-- An API key for the chosen AI Service (e.g., OpenAI)
+This project contains both **backend** and **frontend** code inside this repo.
 
-### Backend Setup
+### 🔽 Clone the Repository
 
-1.  Clone the repository:
-    ```bash
-    cd ./backend
-    ```
-2.  Install dependencies:
-    ```bash
-    npm install
-    # or yarn install
-    ```
-3.  Create a file named `.env` in the `backend` directory and add your environment variables:
-    ```
-    PORT=5000
-    MONGO_URI="mongodb://localhost:27017/tenantdb" # Replace with your URI
-    JWT_SECRET="YOUR_JWT_SECRET_KEY"
-    GEMINI_API_KEY="YOUR_AI_SERVICE_KEY"
-    ```
-4.  Run the server:
-    ```bash
-    npm run dev
-    ```
-
-### Frontend Setup
-
-1.  Navigate to the client directory:
-    ```bash
-    cd ./frontend
-    ```
-2.  Install dependencies:
-    ```bash
-    npm install
-    # or yarn install
-    ```
-3.  Run the client:
-    ```bash
-    npm run dev
-    ```
+```bash
+git clone https://github.com/Iamkartiksaini/Tenant.git
+cd Tenant
+````
 
 ---
+
+### ✅ Prerequisites
+
+* Node.js
+* npm or yarn
+* A MongoDB database instance (Local or Atlas)
+* An API key for the chosen AI Service (e.g., OpenAI/Gemini)
+
+---
+
+## 🛠️ Backend Setup
+
+1. Navigate to the backend folder:
+
+   ```bash
+   cd backend
+   ```
+
+2. Install dependencies:
+
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
+
+3. Create a `.env` file inside the `backend` folder and add:
+
+   ```
+   PORT=5000
+   MONGO_URI="mongodb://localhost:27017/tenantdb" # Replace with your URI
+   JWT_SECRET="YOUR_JWT_SECRET_KEY"
+   GEMINI_API_KEY="YOUR_AI_SERVICE_KEY"
+   ```
+
+4. Run the backend server:
+
+   ```bash
+   npm run dev
+   ```
+
+---
+
+## 🎨 Frontend Setup
+
+1. Navigate to the frontend folder:
+
+   ```bash
+   cd ../frontend
+   ```
+
+2. Install dependencies:
+
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
+
+3. Start the frontend development server:
+
+   ```bash
+   npm run dev
+   ```

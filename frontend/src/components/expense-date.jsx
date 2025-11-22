@@ -17,10 +17,11 @@ const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
 const initialStartDate = formatDate(firstDay);
 const initialEndDate = formatDate(lastDay);
 
-export default function ExpensesDate({ refetch }) {
+function und() { }
 
-  const [startDate, setStartDate] = useState(initialStartDate);
-  const [endDate, setEndDate] = useState(initialEndDate);
+export default function ExpensesDate({ refetch = und, prevDates = {}, loading = false }) {
+  const [startDate, setStartDate] = useState(prevDates?.startDate || initialStartDate);
+  const [endDate, setEndDate] = useState(prevDates?.endDate || initialEndDate);
   const isDateRangeInvalid = new Date(startDate) >= new Date(endDate) || initialStartDate == startDate && initialEndDate == endDate;
 
   function getData() {
@@ -50,7 +51,7 @@ export default function ExpensesDate({ refetch }) {
           aria-label="End Date"
         />
       </div>
-      <Button onClick={getData} disabled={isDateRangeInvalid}>Get</Button>
+      <Button onClick={getData} disabled={isDateRangeInvalid || loading}>Get</Button>
     </div>
   );
 }

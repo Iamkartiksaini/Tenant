@@ -21,6 +21,7 @@ import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { ReactHookField } from "./ui/form-label";
 import { register } from "@/api/service";
+import { toast } from "react-toastify";
 export default function SignupForm({
   ...props
 }) {
@@ -53,14 +54,19 @@ export default function SignupForm({
     if (isAuthLoading) return
     setIsLoading(true)
     try {
-
       const { email, password, name } = data
-
-      const res = await register({ email, password, name })
-      const token = res.data.token
-      signInHandler(token)
-    } catch (error) {
-      console.error(error.message)
+      const { success, data: responseData, message } = await register({ email, password, name })
+      if (success) {
+        const token = res.data.token
+        signInHandler(token)
+        toast.success("Welcome, " + responseData?.user?.name)
+      }
+      else {
+        throw new Error(message)
+      }
+    }
+    catch (error) {
+      toast.error(error.message)
     }
     finally {
       setIsLoading(false)
