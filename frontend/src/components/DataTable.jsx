@@ -1,23 +1,47 @@
 import { cn } from "@/lib/utils";
-import React from "react";
+import React, { useState } from "react";
+import MultiSelect from "./ui/multi-select";
 
 const DataTable = ({ columns, data, action, loading, pageSize = 10, error }) => {
 
+    function renderCols(arr) {
+        let obj = [];
+        arr.map(col => {
+            obj.push(col.field)
+        })
+        return obj
+    }
+
+    const [filter, setFilter] = useState({});
+    const [activeFields, setActiveFields] = useState(() => renderCols(columns));
+    // Sorting based on Order and Field 
+
     const isEmpty = data.length === 0;
     const isDataAvailable = !isEmpty && !loading;
-    const haveEmptySpace = data.length < pageSize 
+    const haveEmptySpace = data.length < pageSize
 
     const rowStyle = "px-6 py-3 text-left text-sm font-medium text-gray-700";
+
+    console.log(activeFields)
+
     return (
         <div className="overflow-x-auto">
+            <MultiSelect items={columns} initialSelected={activeFields} optionLabel={"header"} optionValue="field" activeFields={activeFields} setActiveFields={setActiveFields} />
             <table className="min-w-full divide-y divide-gray-200 border border-gray-300 shadow-sm">
-                <thead className="bg-gray-100">
+                <thead className="bg-gray-100 ">
                     <tr>
-                        {columns.map((col, index) => (
-                            <th key={index} className={rowStyle}>
-                                {col.header}
-                            </th>
-                        ))}
+                        {columns.map((col, index) => {
+                            if (!activeFields.includes(col.field)) return null;
+
+                            return (
+                                <th key={index} className={rowStyle}>
+                                    <span className="flex items-center gap-1">
+                                        {col.header}
+                                        {col?.filter?.Icon && <button className={"py-1 px-2 transition-colors cursor-pointer hover:bg-gray-300"}><col.filter.Icon height="13px" width="13px" /></button>}
+                                    </span>
+                                </th>
+                            )
+                        })}
                         {action?.header &&
                             <th className={rowStyle}>{action.header}</th>}
                     </tr>
@@ -38,14 +62,17 @@ const DataTable = ({ columns, data, action, loading, pageSize = 10, error }) => 
                         </tr>}
                     {isDataAvailable && data.map((row, rowIndex) => (
                         <tr key={rowIndex} className="hover:bg-gray-50">
-                            {columns.map((col, colIndex) => (
-                                <td
-                                    key={colIndex}
-                                    className="px-6 py-4 text-sm text-gray-800"
-                                >
-                                    {getValueData(row, col)}
-                                </td>
-                            ))}
+                            {columns.map((col, colIndex) => {
+                                if (!activeFields.includes(col.field)) return null;
+                                return (
+                                    <td
+                                        key={colIndex}
+                                        className="px-6 py-4 text-sm text-gray-800"
+                                    >
+                                        {getValueData(row, col)}
+                                    </td>
+                                )
+                            })}
                             {action?.body &&
                                 <td
                                     className={rowStyle}

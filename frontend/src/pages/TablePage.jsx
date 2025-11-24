@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import Pagination from '@/components/Pagination';
 import { useExpenseApi } from '@/hook/useExpenseApi';
 import { formatDate } from '@/lib/timeFormatter';
-import { RefreshCcw } from 'lucide-react';
+import {  Funnel, RefreshCcw } from 'lucide-react';
 
 export default function TableView() {
 
@@ -26,10 +26,15 @@ export default function TableView() {
             {label}
         </span>
     }
+
+    function amountFilter(amt) {
+        console.log(amt)
+    }
+
     const cols = [
-        { header: "Id", field: "_id" },
+        { header: "Id", field: "_id", },
         { header: "Title", field: "title" },
-        { header: "Amount", field: "amount" },
+        { header: "Amount", field: "amount", filter: { func: amountFilter, Icon: Funnel } },
         { header: "Category", field: "category", body: renderCategory },
         { header: "Date", field: "date", body: formatDate },
     ]
