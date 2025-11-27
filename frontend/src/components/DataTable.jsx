@@ -1,43 +1,98 @@
 import { cn } from "@/lib/utils";
 import React, { useState } from "react";
 import MultiSelect from "./ui/multi-select";
+import { ArrowDownWideNarrow, ArrowUpNarrowWide, Funnel } from "lucide-react";
 
 const DataTable = ({ columns, data, action, loading, pageSize = 10, error }) => {
 
-    function renderCols(arr) {
-        let obj = [];
-        arr.map(col => {
-            obj.push(col.field)
+    const [filter, setFilter] = useState(() => {
+        let obj = {}
+        columns?.forEach(c => {
+            if (c?.filter) {
+                obj[c.field] = { sort: 0, ...c?.filter }
+            }
         })
         return obj
-    }
+    });
 
-    const [filter, setFilter] = useState({});
     const [activeFields, setActiveFields] = useState(() => renderCols(columns));
-    // Sorting based on Order and Field 
 
     const isEmpty = data.length === 0;
     const isDataAvailable = !isEmpty && !loading;
-    const haveEmptySpace = data.length < pageSize
+    const haveEmptySpace = data.length < pageSize;
+    const dataClone = structuredClone(data);
+
+    // Applying Filter on Active Fields ----
+    Object.keys(filter).forEach(k => {
+        // cf_state = current field filter state 
+        const cf_state = filter[k];
+
+        if (!activeFields.includes(k) || cf_state?.sort === 0) return null;
+
+        const cf_methods = cf_state?.methods
+
+        if (cf_methods) {
+            const isSortFunctionGiven = Object.keys(cf_methods)?.length > 0 &&
+                cf_methods[cf_state?.sort]
+
+            if (isSortFunctionGiven) {
+                const sortMethod = cf_methods[cf_state?.sort]
+                dataClone.sort(sortMethod(k))
+            }
+        }
+        else {
+            dataClone.sort((a, b) => cf_state.sort == 1 ? a[k] - b[k] : b[k] - a[k]);
+        }
+    })
+
+    // Filter Toggle on Field Handler ----
+    function toggleFilter(field, prevState) {
+        return () => {
+            const states = [0, 1, -1];
+            const current = prevState?.sort ?? 0;
+            const nextToggleState = states[(states.indexOf(current) + 1) % states.length];
+            setFilter(prev => ({ ...prev, [field]: { ...prev[field], sort: nextToggleState } }))
+        }
+    }
+
+    // Render on Filter Icon ----
+    function RenderFilterIcon({ col, ...props }) {
+        const registerKey = filter[col.field]
+        if (!registerKey) return null
+        if (registerKey.sort === 0) return <Funnel {...props} />;
+        let Icon = registerKey.sort == 1 ? ArrowDownWideNarrow : ArrowUpNarrowWide;
+        return <Icon {...props} />
+    }
 
     const rowStyle = "px-6 py-3 text-left text-sm font-medium text-gray-700";
-
-    console.log(activeFields)
-
     return (
         <div className="overflow-x-auto">
-            <MultiSelect items={columns} initialSelected={activeFields} optionLabel={"header"} optionValue="field" activeFields={activeFields} setActiveFields={setActiveFields} />
+            <div className="flex justify-between items-center my-2  p-2 rounded-sm">
+                <div className="">
+                </div>
+                <MultiSelect items={columns}
+                    initialSelected={activeFields} optionLabel={"header"}
+                    optionValue="field" activeFields={activeFields} setActiveFields={setActiveFields} />
+            </div>
             <table className="min-w-full divide-y divide-gray-200 border border-gray-300 shadow-sm">
                 <thead className="bg-gray-100 ">
                     <tr>
                         {columns.map((col, index) => {
-                            if (!activeFields.includes(col.field)) return null;
-
+                            if (!activeFields.includes(col?.field)) return null;
+                            const currentFilterState = filter[col?.field]
                             return (
                                 <th key={index} className={rowStyle}>
                                     <span className="flex items-center gap-1">
-                                        {col.header}
-                                        {col?.filter?.Icon && <button className={"py-1 px-2 transition-colors cursor-pointer hover:bg-gray-300"}><col.filter.Icon height="13px" width="13px" /></button>}
+                                        {col?.header}
+                                        {col?.filter &&
+                                            <button
+                                                title={col?.header + "-filter-toggle"}
+                                                onClick={toggleFilter(col?.field, currentFilterState)}
+                                                className={cn("py-1 px-2 transition-colors cursor-pointer hover:bg-gray-300 rounded-sm",
+                                                    currentFilterState?.sort !== 0 && "bg-indigo-400/50 hover:bg-indigo-400/50 active:bg-indigo-400/50",
+                                                )}>
+                                                <RenderFilterIcon col={col} height="13px" width="13px" />
+                                            </button>}
                                     </span>
                                 </th>
                             )
@@ -60,7 +115,7 @@ const DataTable = ({ columns, data, action, loading, pageSize = 10, error }) => 
                                 no records found
                             </td>
                         </tr>}
-                    {isDataAvailable && data.map((row, rowIndex) => (
+                    {isDataAvailable && dataClone.map((row, rowIndex) => (
                         <tr key={rowIndex} className="hover:bg-gray-50">
                             {columns.map((col, colIndex) => {
                                 if (!activeFields.includes(col.field)) return null;
@@ -86,9 +141,18 @@ const DataTable = ({ columns, data, action, loading, pageSize = 10, error }) => 
                         key={data.length + index} />)}
                 </tbody>
             </table>
-        </div>
+        </div >
     );
 };
+
+
+function renderCols(arr) {
+    let obj = [];
+    arr.map(col => {
+        obj.push(col.field)
+    })
+    return obj
+}
 
 function EmptyRow({ cols = [1, 2, 3, 4], animation = true, loading = false }) {
     return <tr>

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import Pagination from '@/components/Pagination';
 import { useExpenseApi } from '@/hook/useExpenseApi';
 import { formatDate } from '@/lib/timeFormatter';
-import {  Funnel, RefreshCcw } from 'lucide-react';
+import { Funnel, RefreshCcw } from 'lucide-react';
 
 export default function TableView() {
 
@@ -27,16 +27,19 @@ export default function TableView() {
         </span>
     }
 
-    function amountFilter(amt) {
-        console.log(amt)
-    }
-
     const cols = [
         { header: "Id", field: "_id", },
-        { header: "Title", field: "title" },
-        { header: "Amount", field: "amount", filter: { func: amountFilter, Icon: Funnel } },
+        {
+            header: "Title", field: "title", filter: {
+                methods: { [1]: sortStringsAsc, [-1]: sortStringsDesc }
+            }
+        },
+        { header: "Amount", field: "amount", filter: true },
         { header: "Category", field: "category", body: renderCategory },
-        { header: "Date", field: "date", body: formatDate },
+        {
+            header: "Date", field: "date", body: formatDate,
+            filter: { methods: { [1]: sortByISODateAsc, [-1]: SortByISODateDesc } }
+        },
     ]
 
     const tableProps = {
@@ -55,9 +58,36 @@ export default function TableView() {
     }
 
 
+    function sortByISODateAsc(key) {
+        return (a, b) => {
+            const dateA = new Date(a[key]).getTime();
+            const dateB = new Date(b[key]).getTime();
+            return dateA - dateB;
+        }
+    };
+
+    function SortByISODateDesc(key) {
+        return (a, b) => {
+            const dateA = new Date(a[key]).getTime();
+            const dateB = new Date(b[key]).getTime();
+            return dateB - dateA;
+        }
+    };
+
+
+    function sortStringsAsc(key) {
+        return (a, b) => a[key].localeCompare(b[key]);
+    }
+
+    function sortStringsDesc(key) {
+        return (a, b) => b[key].localeCompare(a[key]);
+    }
+
+
     function fetchData() {
         refetch()
     }
+    
     return (
         <div className="min-h-screen bg-gray-100 p-4 sm:p-8 flex justify-center items-start">
             <div className='w-full max-w-7xl bg-white shadow-2xl rounded-xl p-4 sm:p-8 '>
@@ -69,7 +99,7 @@ export default function TableView() {
                         </h2>
                     </div>
                     <Button onClick={fetchData}
-                        disabled={loading} className={"bg-indigo-600"} title="Refresh Expense Data">
+                        disabled={loading} className={"bg-indigo-600"} title="Refresh Data">
                         <RefreshCcw className={loading && 'animate-spin'} />
                     </Button>
                 </div>

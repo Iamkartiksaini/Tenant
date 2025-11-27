@@ -94,7 +94,7 @@ export default function MultiSelect({
                                         >
                                             <Checkbox
                                                 checked={selected.includes(value)}
-                                                className="mr-2"
+                                                className="mr-2 active:bg-sky-400"
                                             />
 
                                             {toSentenceCase(label)}

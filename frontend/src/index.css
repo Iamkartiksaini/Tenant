@@ -119,6 +119,17 @@
   }
 }
 
+@layer utilities {
+  .data-\[state\=checked\]\:bg-primary {
+    &[data-state="checked"] {
+      background-color: var(--color-indigo-500);
+      svg {
+        stroke: var(--background);
+      }
+    }
+  }
+}
+
 html,
 body {
   font-family: monospace;
