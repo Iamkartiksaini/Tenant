@@ -47,6 +47,7 @@ instance.interceptors.response.use(
     if (status === 401) {
       const cookies = new Cookies();
       cookies.remove(cookieDataKey, { path: "/" });
+      window.location.pathname ="/"
     }
 
     const errorMessage =

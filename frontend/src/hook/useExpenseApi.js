@@ -30,12 +30,12 @@ export function useExpenseApi({
       setLoading(true);
       setError(null);
       try {
-        // const resp = await getExpenses({
-        //   page: currentPage,
-        //   limit: pageSize,
-        //   ...apiProps,
-        // });
-        const resp = { data: fakeResponse, success: true };
+        const resp = await getExpenses({
+          page: currentPage,
+          limit: pageSize,
+          ...apiProps,
+        });
+        // const resp = { data: fakeResponse, success: true };
         if (resp.success) {
           const { pages, total, expenses } = resp.data;
           setExpenses(expenses ?? []);
@@ -81,7 +81,7 @@ const fakeResponse = {
     },
     {
       _id: "691f1e524f745b05effe4a29",
-      title: "Doremon",
+      title: "Bike",
       category: "Other",
       amount: 228,
       date: "2025-11-30T18:30:00.000Z",
@@ -95,7 +95,7 @@ const fakeResponse = {
     },
     {
       _id: "692197df81ec1fd60689c4a1",
-      title: "To The City",
+      title: "Hometown",
       category: "Travel",
       amount: 300,
       date: "2025-11-21T18:30:00.000Z",
@@ -116,14 +116,14 @@ const fakeResponse = {
     },
     {
       _id: "691ed3081a6fb40574ecc8af",
-      title: "Office Supplies",
+      title: "Mobile",
       category: "Other",
-      amount: 48.2,
+      amount: 2570,
       date: "2025-11-19T18:30:00.000Z",
     },
     {
       _id: "691f24b2e1a5c5911b0804cf",
-      title: "chaowmin",
+      title: "Milk",
       category: "Groceries",
       amount: 95,
       date: "2025-11-19T18:30:00.000Z",
