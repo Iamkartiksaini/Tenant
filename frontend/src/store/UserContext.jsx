@@ -1,7 +1,9 @@
-import React, { useState, useEffect, use, createContext } from "react";
+import React, { useState, useEffect, use, createContext, useRef } from "react";
 import Cookies from "universal-cookie";
 import { jwtDecode } from "jwt-decode";
-import { cookiesKey } from "@/lib/constants";
+import { addCookeyKey, cookiesKey, getCookies, getStoreToken, removeCookeyKey, setStoreToken } from "@/lib/constants";
+import { refreshApi } from "@/api/service";
+import { toast } from "react-toastify";
 
 export const UserContext = createContext({
     user: null
@@ -31,29 +33,59 @@ export function decodingToken(token = "") {
 
 
 export const UserProvider = ({ children }) => {
-    const cookies = new Cookies();
-    const token = cookies.get(cookiesKey);
+
     const [user, setUser] = useState(null);
     const [isAuthLoading, setIsAuthLoading] = useState(true);
+    const isMount = useRef(false);
 
     useEffect(() => {
-        const userData = token ? decodingToken(token) : null;
-        if (userData) { setUser(userData); }
-        if (isAuthLoading == false && user?.email == undefined) { cookies.remove(cookiesKey, { path: "/" }); }
-        if (isAuthLoading == true) { setIsAuthLoading(false) }
+        fetchNewAccessToken()
     }, [isAuthLoading]);
 
-    const signInHandler = (token) => {
+
+    async function fetchNewAccessToken() {
+        if (isMount.current == true) return
+        isMount.current = true
+        try {
+            const token = getCookies();
+            const ele = token ? jwtDecode(token) : false;
+            if (token && ele) {
+                const res = await refreshApi(token);
+                const accessToken = res?.data?.accessToken
+                if (accessToken) {
+                    const userData = token ? decodingToken(accessToken) : null;
+                    if (userData) {
+                        setUser(userData);
+                        setStoreToken({ token: accessToken })
+                    }
+                }
+                else {
+                    sign_out_handler()
+                }
+            }
+        } catch (error) {
+            toast.error(error.message, "Auth revoked, Re-Login.")
+            sign_out_handler()
+        }
+        finally {
+            setIsAuthLoading(false)
+        }
+    }
+
+
+    const signInHandler = ({ token, refreshToken, }) => {
+        const validateToken = refreshToken ? decodingToken(refreshToken) : null;
         const userData = token ? decodingToken(token) : null;
-        if (userData) {
+
+        if (userData || validateToken) {
             setUser(userData);
-            cookies.set(cookiesKey, token, { path: "/" });
+            addCookeyKey({ refToken: refreshToken, accTkn: token });
         }
     };
 
     const sign_out_handler = () => {
         setUser(null);
-        cookies.remove(cookiesKey, { path: "/" });
+        removeCookeyKey();
     };
 
     const data = { user, isAuthLoading, signInHandler, sign_out_handler }

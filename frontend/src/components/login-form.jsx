@@ -42,8 +42,7 @@ export default function LoginForm() {
     try {
       const { success, data: responseData, message } = await login(data)
       if (success) {
-        const token = responseData?.token
-        signInHandler(token)
+        signInHandler(responseData)
         toast.success("Welcome, " + responseData?.user?.name)
       } else {
         // if (message.toLowerCase()?.includes("pass")) {

@@ -24,8 +24,9 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "Please add a password"],
     },
+    refreshToken: String,
   },
-  { timestamps: true,   },
+  { timestamps: true }
 );
 
 // Hash password before saving
@@ -41,7 +42,6 @@ userSchema.pre("save", async function (next) {
     next(err);
   }
 });
-
 
 const User = mongoose.model("users", userSchema);
 module.exports = User;

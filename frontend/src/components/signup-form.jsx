@@ -57,8 +57,7 @@ export default function SignupForm({
       const { email, password, name } = data
       const { success, data: responseData, message } = await register({ email, password, name })
       if (success) {
-        const token = responseData.token
-        signInHandler(token)
+        signInHandler(responseData)
         toast.success("Welcome, " + responseData?.user?.name)
       }
       else {

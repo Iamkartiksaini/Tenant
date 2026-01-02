@@ -1,10 +1,17 @@
 import axios from "axios";
-import { server_base_Url, cookiesKey } from "@/lib/constants";
-
-import Cookies from "universal-cookie";
+import {
+  server_base_Url,
+  accessTokenKey,
+  refreshTokenKey,
+  getStoreToken,
+  removeCookeyKey,
+  cookiesKey,
+  getCookies,
+  setStoreToken,
+} from "@/lib/constants";
 
 const baseURL = server_base_Url;
-const cookieDataKey = cookiesKey;
+refreshTokenKey;
 
 const instance = axios.create({
   baseURL,
@@ -16,7 +23,7 @@ instance.interceptors.request.use(
     try {
       config.headers["Content-Type"] = "application/json";
       config.headers.Accept = "application/json";
-      const token = new Cookies().get(cookieDataKey);
+      const token = getStoreToken();
 
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
@@ -28,8 +35,6 @@ instance.interceptors.request.use(
   },
 
   function (error) {
-    debugger;
-    console.log(error);
     return Promise.reject(error);
   }
 );
@@ -42,12 +47,24 @@ instance.interceptors.response.use(
       throw new Error(response?.data?.message || "Server Error");
     }
   },
-  function (error) {
+  async function (error) {
+    const originalRequest = error.config;
+
     const { status, response } = error;
     if (status === 401) {
-      const cookies = new Cookies();
-      cookies.remove(cookieDataKey, { path: "/" });
-      window.location.pathname ="/"
+      const refToken = getCookies();
+      if (refToken == undefined) {
+        removeCookeyKey();
+        window.location.pathname = "/";
+      } else {
+        const { isSuccess } = await refreshLogic(refToken);
+        if (isSuccess) {
+          return await instance(originalRequest);
+        } else {
+          removeCookeyKey();
+          window.location.pathname = "/";
+        }
+      }
     }
 
     const errorMessage =
@@ -60,8 +77,30 @@ instance.interceptors.response.use(
   }
 );
 
+// Refresh Logic -----------
+async function refreshLogic(t) {
+  try {
+    const { data } = await refreshApi(t);
+    if (data?.accessToken) {
+      setStoreToken({ token: data?.accessToken });
+      return { isSuccess: true };
+    } else {
+      throw new Error();
+    }
+  } catch (error) {
+    return {
+      isSuccess: false,
+    };
+  }
+}
+// Refresh Logic -----------
+
 export async function login(body) {
   return await instance.post("auth/login", body);
+}
+
+export async function refreshApi(t) {
+  return await instance.post("auth/refresh", { refreshToken: t });
 }
 
 export async function register(body) {
