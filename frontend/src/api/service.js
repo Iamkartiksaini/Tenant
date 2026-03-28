@@ -8,6 +8,7 @@ import {
   cookiesKey,
   getCookies,
   setStoreToken,
+  addCookeyKey,
 } from "@/lib/constants";
 
 const baseURL = server_base_Url;
@@ -36,7 +37,7 @@ instance.interceptors.request.use(
 
   function (error) {
     return Promise.reject(error);
-  }
+  },
 );
 
 instance.interceptors.response.use(
@@ -74,15 +75,15 @@ instance.interceptors.response.use(
       success: false,
       message: errorMessage,
     };
-  }
+  },
 );
 
 // Refresh Logic -----------
-async function refreshLogic(t) {
+export async function refreshLogic(t) {
   try {
     const { data } = await refreshApi(t);
     if (data?.accessToken) {
-      setStoreToken({ token: data?.accessToken });
+      addCookeyKey({ accTkn: data?.accessToken, refToken: data.refreshToken });
       return { isSuccess: true };
     } else {
       throw new Error();

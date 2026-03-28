@@ -1,11 +1,15 @@
 const { GoogleGenAI } = require("@google/genai");
 const express = require("express");
 const ExpenseModel = require("../models/Expense.model");
-const { Api_Erorr_Response, Api_Response } = require("../controllers/response-handler");
+const {
+  Api_Erorr_Response,
+  Api_Response,
+} = require("../controllers/response-handler");
+const { GEMINI_API_KEY } = require("../utils/config");
 
 const AiRoutes = express.Router();
 
-const ai = new GoogleGenAI({apiKey:process.env.GEMINI_API_KEY});
+const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
 AiRoutes.get("/", async (req, res) => {
   const { startDate, endDate } = req.query;
@@ -18,16 +22,20 @@ AiRoutes.get("/", async (req, res) => {
     queryEndDate = new Date(endDate);
 
     if (isNaN(queryStartDate) || isNaN(queryEndDate)) {
-      return res.status(400).json(Api_Erorr_Response({
-        message:
-          "Invalid date format. Please use ISO 8601 format (e.g., YYYY-MM-DD).",
-      }));
+      return res.status(400).json(
+        Api_Erorr_Response({
+          message:
+            "Invalid date format. Please use ISO 8601 format (e.g., YYYY-MM-DD).",
+        }),
+      );
     }
 
     if (queryStartDate >= queryEndDate) {
-      return res.status(400).json(Api_Erorr_Response({
-        message: "Start date must be strictly before the end date.",
-      }));
+      return res.status(400).json(
+        Api_Erorr_Response({
+          message: "Start date must be strictly before the end date.",
+        }),
+      );
     }
   } else {
     const today = new Date();
@@ -80,14 +88,14 @@ AiRoutes.get("/", async (req, res) => {
         totalSpend: total.toFixed(2),
         byCategory: data,
         aiInsight: summary,
-      })
+      }),
     );
   } catch (error) {
     console.error("Error in AI route:", error);
     res
       .status(500)
       .json(
-        Api_Erorr_Response({ message: "An internal server error occurred." })
+        Api_Erorr_Response({ message: "An internal server error occurred." }),
       );
   }
 });
@@ -101,7 +109,7 @@ async function generateAISummary({ total, byCategory }) {
 
   const dataPart = {
     text: `FINANCIAL DATA: Total spent: ${total} | Spending by category: ${JSON.stringify(
-      byCategory
+      byCategory,
     )}`,
   };
 

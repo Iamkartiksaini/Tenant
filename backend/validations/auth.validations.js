@@ -1,4 +1,5 @@
 const { body, validationResult } = require("express-validator");
+const { Api_Erorr_Response } = require("../controllers/response-handler");
 
 const nameValidation = body("name").notEmpty().withMessage("Name is required");
 
@@ -17,7 +18,7 @@ const passwordValidation = body("password")
   .withMessage("Password must be 6-20 characters long")
   .matches(/^[A-Z][A-Za-z0-9]{5,19}$/)
   .withMessage(
-    "Password must start with an uppercase letter and contain only letters and numbers"
+    "Password must start with an uppercase letter and contain only letters and numbers",
   );
 
 const registerValidationRules = [
@@ -26,21 +27,23 @@ const registerValidationRules = [
   passwordValidation,
 ];
 
-const loginValidationRules = [
-  emailValidation,
-];
+const loginValidationRules = [emailValidation];
 
 const validateUserBody = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const firstErrors = {};
+    let message = null;
     errors.array().forEach((err) => {
       if (!firstErrors[err.path]) {
         firstErrors[err.path] = err.msg;
+        if (message == null) {
+          message = err.msg;
+        }
       }
-    });      
-
-    return res.status(400).json({ errors: firstErrors });
+    });
+    const x = Api_Erorr_Response({ message });
+    return res.status(200).json(x);
   }
   next();
 };

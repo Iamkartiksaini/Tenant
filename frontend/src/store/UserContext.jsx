@@ -1,7 +1,6 @@
 import React, { useState, useEffect, use, createContext, useRef } from "react";
-import Cookies from "universal-cookie";
 import { jwtDecode } from "jwt-decode";
-import { addCookeyKey, cookiesKey, getCookies, getStoreToken, removeCookeyKey, setStoreToken } from "@/lib/constants";
+import { addCookeyKey, getCookies, removeCookeyKey, setStoreToken } from "@/lib/constants";
 import { refreshApi } from "@/api/service";
 import { toast } from "react-toastify";
 
@@ -9,11 +8,16 @@ export const UserContext = createContext({
     user: null
 });
 
-export function decodingToken(token = "") {
+export function decodingToken(token = "", isRefreshToken) {
     if (!token) throw new Error("Token missing");
 
     try {
         const decoded = jwtDecode(token);
+
+        if (isRefreshToken) {
+            if (!decoded?.userId) throw new Error("User details invalid");
+            return decoded?.userId
+        }
 
         if (!decoded?.user?.email) throw new Error("User details invalid");
         if (typeof decoded.exp !== "number") throw new Error("Token expiration (exp) claim missing");
@@ -39,11 +43,11 @@ export const UserProvider = ({ children }) => {
     const isMount = useRef(false);
 
     useEffect(() => {
-        fetchNewAccessToken()
+        fetchNewTokens()
     }, [isAuthLoading]);
 
 
-    async function fetchNewAccessToken() {
+    async function fetchNewTokens() {
         if (isMount.current == true) return
         isMount.current = true
         try {
@@ -51,12 +55,13 @@ export const UserProvider = ({ children }) => {
             const ele = token ? jwtDecode(token) : false;
             if (token && ele) {
                 const res = await refreshApi(token);
-                const accessToken = res?.data?.accessToken
-                if (accessToken) {
-                    const userData = token ? decodingToken(accessToken) : null;
-                    if (userData) {
+                const { accessToken, refreshToken } = res?.data || {}
+                if (accessToken && refreshToken) {
+                    const userData = decodingToken(accessToken);
+                    const newRefToken = decodingToken(refreshToken,true);
+                    if (userData && newRefToken) {
                         setUser(userData);
-                        setStoreToken({ token: accessToken })
+                        addCookeyKey({ accTkn: accessToken, refToken: refreshToken })
                     }
                 }
                 else {
@@ -73,10 +78,10 @@ export const UserProvider = ({ children }) => {
     }
 
 
-    const signInHandler = ({ token, refreshToken, }) => {
-        const validateToken = refreshToken ? decodingToken(refreshToken) : null;
+    const signInHandler = (props) => {
+        const { token, refreshToken } = props
+        const validateToken = refreshToken ? decodingToken(refreshToken, true) : null;
         const userData = token ? decodingToken(token) : null;
-
         if (userData || validateToken) {
             setUser(userData);
             addCookeyKey({ refToken: refreshToken, accTkn: token });
